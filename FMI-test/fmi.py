@@ -7,7 +7,7 @@ from datetime import timedelta
 #import pygrib
 
 def getDownloadMetaData(apikey, timestep, datastep, forecastHoursToFuture, parameters, bbox):
-    #try:
+    try:
     	now = datetime.now()
     	starttime = now.strftime("%Y-%m-%dT%H:00:00Z")
     	end = now + timedelta(hours=forecastHoursToFuture)
@@ -18,8 +18,8 @@ def getDownloadMetaData(apikey, timestep, datastep, forecastHoursToFuture, param
     	data = response.content
     	print("GET Result: code={}".format(response.status_code))
     	return data
-    #except:
-        #logger.error("Error while fetching ice download metadata")
+    except:
+        logger.error("Error while fetching ice download metadata")
 
 def getGrib(data):
     try:

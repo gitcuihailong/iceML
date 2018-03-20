@@ -1,6 +1,8 @@
 import logging
 import requests
 import xmltodict
+from datetime import datetime
+#import pygrib
 
 def getDownloadMetaData(apikey, timestep, datastep, forecastHoursToFuture, parameters, bbox):
     try:
@@ -42,3 +44,7 @@ timestep = "180"
 
 data = getDownloadMetaData(apiKey, timestep, datastep, forecastHoursToFuture, parameters, bbox)
 grib = getGrib(data)
+now = datetime.now()
+date_var = now.strftime("%Y-%m-%dT%H-%M-%S")
+with open("/Users/villehak/Work/iceML/ice-data/icedata_{}.grb2".format(date_var), mode='wb') as localfile:
+	localfile.write(grib)

@@ -2,51 +2,34 @@ import logging
 import requests
 import xmltodict
 
-def getXmlData(apikey, timestep, datastep, forecastHoursToFuture, parameters, bbox):
-	try:
-		location_url = "http://data.fmi.fi/wfs?fmi-apikey={}&request=GetFeature&storedquery_id=fmi::forecast::helmi::surface::array&timestep={}&scalefactor=1000&datastep={}&endtime=after+{}+hours&parameters={}&bbox={}".format(apiKey, timestep, datastep, forecastHoursToFuture, parameters, bbox)
-		print("GET: url=" + location_url)
-		response = requests.get(url=location_url)
-		data = response.content
-		print("GET Result: code={}".format(response.status_code))
-		return data
-	except:
-		logger.error("Error while fetching ice data")
+def getDownloadMetaData(apikey, timestep, datastep, forecastHoursToFuture, parameters, bbox):
+    try:
+        location_url = "http://data.fmi.fi/wfs?fmi-apikey={}&request=GetFeature&storedquery_id=fmi::forecast::helmi::grid&timestep={}&scalefactor=1000&datastep={}&endtime=after+{}+hours&parameters={}&bbox={}".format(apiKey, timestep, datastep, forecastHoursToFuture, parameters, bbox)
+        print("GET: url=" + location_url)
+        response = requests.get(url=location_url)
+        data = response.content
+        print("GET Result: code={}".format(response.status_code))
+        return data
+    except:
+        logger.error("Error while fetching ice download metadata")
 
-def parseXmlData(data):
-	try:
-		#print(data)
-		doc = xmltodict.parse(data)
-		lonMin = float(doc['Products']['Grid']['@LonMin'])
-		latMin = float(doc['Products']['Grid']['@LatMin'])
-		lonMax = float(doc['Products']['Grid']['@LonMax'])
-		latMax = float(doc['Products']['Grid']['@LatMax'])
-		xDims = int(doc['Products']['Grid']['@GridXDim'])
-		yDims = int(doc['Products']['Grid']['@GridYDim'])
-		xStep = (lonMax - lonMin) / (xDims - 1)
-		yStep = (latMax - latMin) / (yDims - 1)
+def getGrib(data):
+    try:
+        #print(data)
+        doc = xmltodict.parse(data)
+        downloadUrl = doc['wfs:FeatureCollection']['wfs:member'][0]['omso:GridSeriesObservation']['om:result']['gmlcov:RectifiedGridCoverage']['gml:rangeSet']['gml:File']['gml:fileReference']
 
-		print(xDims*yDims)
+        print("GET: url=" + downloadUrl)
+        response = requests.get(url=downloadUrl)
+        grib = response.content
+        print("GET Result: code={}".format(response.status_code))
 
-		for product in doc['Products']['Product']['Time']:
-			processGrid(latMin, lonMin, yStep, xStep, product)
+        return grib
 
+        #print(doc['Time'])
+    except:
+        logger.error("Error while fetching ice grib")
 
-		#print(doc['Time'])
-	except:
-		logger.error("Error while parsing ice xml")
-
-def processGrid(startLat, startLon, yStep, xStep, data):
-	try:
-		grid = [int(x) for x in data['Data']['IntegerArray'].split()]
-		time = data['@Time']
-		scaleFactor = data['Data']['@ScalingFactor']
-		nullValue = data['Data']['@NullValue']
-		product = data['Data']['@Parameter']
-		print("Grid size={}, product={}, time={}, scaleFactor={}, nullValue={}".format(len(grid), product, time, scaleFactor, nullValue))
-		#print(grid)
-	except:
-		logger.error("Error while processing ice grid")
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -54,8 +37,8 @@ parameters = "icespeed,icedirection"
 apiKey = ""
 forecastHoursToFuture = "6"
 datastep = "4"
-bbox = "17,60,22,63.9"
+bbox = "17,60,25,65"
 timestep = "180"
 
-data = getXmlData(apiKey, timestep, datastep, forecastHoursToFuture, parameters, bbox)
-parseXmlData(data)
+data = getDownloadMetaData(apiKey, timestep, datastep, forecastHoursToFuture, parameters, bbox)
+grib = getGrib(data)

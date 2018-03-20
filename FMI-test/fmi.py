@@ -51,7 +51,7 @@ def processGrid(startLat, startLon, yStep, xStep, data):
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 parameters = "icespeed,icedirection"
-apiKey = "5761aae0-2f02-4c9c-b3c8-d2500c6f05cc"
+apiKey = ""
 forecastHoursToFuture = "6"
 datastep = "4"
 bbox = "17,60,22,63.9"

@@ -5,18 +5,17 @@ import pygrib # import pygrib interface to grib_api
 import math
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
-MIN_LAT = 60.5
 
-def parse_grib(filepath, forecastAgeLimit):
+def parse_grib(filepath, forecastAgeLimit, minLat):
     grb = pygrib.open(filepath)
-    return grb_to_df(grb, forecastAgeLimit)
+    return grb_to_df(grb, forecastAgeLimit, minLat)
 
-def grb_to_df(grb, forecastAgeLimit):
+def grb_to_df(grb, forecastAgeLimit, minLat):
     grids = get_grids_from_grb(grb)
-    ices = get_values_from_grids(grids, forecastAgeLimit)
+    ices = get_values_from_grids(grids, forecastAgeLimit, minLat)
     return pd.DataFrame(ices, columns=['timestamp', 'lat', 'lon', 'concentration(%)', 'thickness(m)', 'speed(m/s)', 'direction(deg)', 'forecast_age(h)'])
 
-def get_values_from_grids(grids, forecastAgeLimit):
+def get_values_from_grids(grids, forecastAgeLimit, minLat):
     ices = []
     for i in range(0, len(grids['thicknesses'])):
         lats, lons = grids['concentrations'][i].latlons()
@@ -44,7 +43,7 @@ def get_values_from_grids(grids, forecastAgeLimit):
                 lat = lats[x][y]
                 lon = lons[x][y]
 
-                if (lat > MIN_LAT) & atleastOneValid(conc, thick, speed, dir):
+                if (lat > minLat) & atleastOneValid(conc, thick, speed, dir):
                     ices.append([timestamp, lat, lon, conc, thick, speed, dir, hoursFromAnalysis])
     return ices
 

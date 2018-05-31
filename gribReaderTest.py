@@ -6,7 +6,7 @@ from ice import analysis
 GRB_FILEPATH = 'jupiter/icedata_2018-03-21T00-44-30_next_6hours.grb2'
 AIS_FILEPATH = 'jupiter/ais-observations-20180320-20180321.csv'
 
-ices = gribReader.parse_grib(GRB_FILEPATH, forecastAgeLimit=1)
+ices = gribReader.parse_grib(GRB_FILEPATH, forecastAgeLimit=1, minLat=60.5)
 print('Parsed ice data. Top 10 rows:')
 print(ices.head(10))
 

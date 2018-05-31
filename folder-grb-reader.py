@@ -88,4 +88,4 @@ for filename in grbs:
         except ValueError:
             print("Error while processing file:", sys.exc_info()[0])
     else:
-        print("File {} already read.").format(filename)
+        print("File {} already read.".format(filename))
